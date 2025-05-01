@@ -54,6 +54,12 @@ router.patch('/:ticketId', authMiddleware, async (req, res, next) => {
             { new: true } 
         );
 
+        if (status === 'resolved') {
+            const visitor = await Visitor.findById(ticket.visitorId);
+            visitor.isTicketActive = false;
+            await visitor.save();
+        }
+
         if (!ticket) {
             return res.status(404).json({ message: "Ticket not found" });
         }

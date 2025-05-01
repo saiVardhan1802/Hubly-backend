@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 router.post('/register', async (req, res, next) => {
     try {
         const { firstName, lastName, email, password } = req.body;
-        const userCount = await User.countDocuments();
+        const userCount = await User?.countDocuments();
 
         const emailExists = await User.findOne({ email });
         if (emailExists) {

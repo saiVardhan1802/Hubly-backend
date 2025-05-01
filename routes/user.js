@@ -10,12 +10,19 @@ router.patch("/:userId", authMiddleware, async (req, res, next) => {
         const { userId } = req.params;
         const { firstName, lastName, email, password } = req.body;
 
+        let logout = false;
         // Build update object only with non-empty fields
         const updateFields = {};
         if (firstName) updateFields.firstName = firstName;
         if (lastName) updateFields.lastName = lastName;
-        if (email) updateFields.email = email;
-        if (password) updateFields.password = await bcrypt.hash(password, 8);
+        if (email) {
+            updateFields.email = email;
+            logout = true;
+        };
+        if (password) {
+            updateFields.password = await bcrypt.hash(password, 8);
+            logout = true;
+        };
 
         // Check for email uniqueness if email is being updated
         if (email) {
@@ -37,7 +44,7 @@ router.patch("/:userId", authMiddleware, async (req, res, next) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        return res.status(200).json(user);
+        return res.status(200).json({user, logout});
     } catch (error) {
         next(error);
     }
