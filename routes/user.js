@@ -10,6 +10,9 @@ router.patch("/:userId", authMiddleware, async (req, res, next) => {
         const { userId } = req.params;
         const { firstName, lastName, email, password } = req.body;
 
+        console.log("Incoming req.body:", req.body);
+        console.log("Fields triggering logout:", { email, password });
+
         let logout = false;
         // Build update object only with non-empty fields
         const updateFields = {};
@@ -44,7 +47,7 @@ router.patch("/:userId", authMiddleware, async (req, res, next) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        return res.status(200).json({user, logout});
+        return res.status(200).json({ user, logout });
     } catch (error) {
         next(error);
     }
@@ -85,6 +88,16 @@ router.post('/teams/:teamId', authMiddleware, async (req, res, next) => {
         let { teamId } = req.params;
         const { phone, email, designation, userId } = req.body;
         let { teamName } = req.body;
+
+        const emailExists = await User.find({ email });
+        if (emailExists.length > 0) {
+            return res.status(409).json({ message: "This email is already in use." });
+        }
+
+        const phoneExists = await User.find({ phone });
+        if (phoneExists.length > 0) {
+            return res.status(409).json({ message: "This phone number is already in use." });
+        }
 
         if (designation === 'admin') {
             teamId = uuidv4();
@@ -133,6 +146,16 @@ router.patch('/teams/:teamId', authMiddleware, async (req, res, next) => {
         let { teamId } = req.params;
         const { phone, email, designation, adminId, userId } = req.body;
         let { teamName } = req.body;
+
+        const emailExists = await User.find({ email });
+        if (emailExists.length > 0 && emailExists[0]._id.toString() !== userId) {
+            return res.status(409).json({ message: "This email is already in use." });
+        }
+
+        const phoneExists = await User.find({ phone });
+        if (phoneExists.length > 0 && phoneExists[0]._id.toString() !== userId) {
+            return res.status(409).json({ message: "This phone number is already in use." });
+        }
 
         if (designation === 'admin') {
             teamId = uuidv4();
