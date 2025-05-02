@@ -18,11 +18,15 @@ router.post('/', async (req, res, next) => {
         const savedVisitor = await newVisitor.save();
         const superAdmin = await User.findOne({ role: 'super-admin' });
 
+        if (!superAdmin) {
+            return res.status(404).json({ message: 'App is not ready yet. Please sign up.' });
+        }
+
         // 2. Create Ticket for the visitor
         console.log(messages);
         const newTicket = new Ticket({
             visitorId: savedVisitor._id,
-            status: 'unresolved', // or whatever default status
+            status: 'unresolved', 
             title: messages.filter(msg => msg.senderType === 'visitor')[0].content,
             userId: superAdmin._id
         });
